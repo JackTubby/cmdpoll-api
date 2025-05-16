@@ -1,12 +1,15 @@
 {
   "name": "console-vote",
-  "version": "1.0.0",
-  "description": "",
+  "version": "0.0.1",
+  "description": "A console-based voting application",
+  "type": "module",
   "main": "index.js",
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
     "dev": "tsc -w",
+    "serve": "nodemon dist/index.js",
+    "dev:watch": "concurrently \"npm run dev\" \"npm run serve\"",
     "test": "jest",
     "test-watch": "jest --watch",
     "test-coverage": "jest --coverage"
@@ -16,11 +19,18 @@
   "devDependencies": {
     "@types/jest": "^29.5.14",
     "@types/node": "^22.15.18",
+    "concurrently": "^9.1.2",
     "jest": "^29.7.0",
+    "nodemon": "^3.1.10",
     "ts-jest": "^29.3.3",
     "typescript": "^5.8.3"
   },
   "dependencies": {
+    "@types/express": "^5.0.1",
+    "dotenv": "^16.5.0",
+    "eslint": "^9.26.0",
+    "express": "^5.1.0",
+    "prettier": "^3.5.3",
     "socket.io": "^4.8.1"
   }
 }
