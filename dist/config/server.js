@@ -32,9 +32,6 @@ export function createServer() {
     /**
      * Socket.IO connection handler
      * This function handles incoming WebSocket connections.
-     * It listens for events such as 'message' and 'join_room'.
-     * When a user connects, it logs the connection and sets up event listeners.
-     * When a user disconnects, it logs the disconnection.
      */
     io.on('connection', (socket) => {
         console.log('User connected:', socket.id);
