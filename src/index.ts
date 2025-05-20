@@ -1,7 +1,7 @@
 // index.ts - Application entry point
-import { createServer } from './config/server'
-import { config } from './config'
-import { logger } from './utils/logger'
+import { createServer } from './config/server.js'
+import { config } from './config/index.js'
+import { logger } from './utils/logger.js'
 
 let server: any = null
 
@@ -19,15 +19,15 @@ process.on('unhandledRejection', (reason: unknown, promise: Promise<any>) => {
 // Graceful shutdown function
 async function gracefulShutdown(signal: string) {
   logger.info(`Received ${signal}, starting graceful shutdown...`)
-  
+
   try {
     if (server && server.close) {
       await server.close()
       logger.info('Server closed successfully')
     }
-    
+
     // We could close db connections or other resources here
-    
+
     logger.info('Graceful shutdown completed')
     process.exit(0)
   } catch (error) {
@@ -44,13 +44,13 @@ async function bootstrap() {
   try {
     server = createServer()
     const port = config.port || 3000
-    
+
     server.listen(port, () => {
       logger.info(`🚀 Server running on port ${port}`)
       logger.info(`📊 Polling system ready to accept connections`)
       logger.info(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`)
     })
-    
+
     return server
   } catch (error) {
     logger.error('Failed to start server:', error)
