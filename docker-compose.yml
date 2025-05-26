@@ -1,0 +1,22 @@
+version: '3'
+services:
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - '5433:5433'
+    volumes:
+      - cmdpoll-postgres-data:/var/lib/postgresql/data
+  app:
+    build: .
+    ports:
+      - '3006:3006'
+    depends_on:
+      - db
+
+volumes:
+  cmdpoll-postgres-data:
