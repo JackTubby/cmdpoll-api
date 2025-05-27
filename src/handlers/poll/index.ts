@@ -23,8 +23,18 @@ export async function createPollHandler(req: Request, res: Response) {
         userId,
       },
     })
-    res.json(save)
+    logger.info('Poll created successfully:', save)
+    res.json({
+      ok: true,
+      message: 'Poll created successfully',
+      data: save,
+    })
   } catch (err) {
-    res.json(err)
+    logger.error('Error creating poll:', err)
+    res.json({
+      ok: false,
+      message: 'Error creating poll',
+      error: err instanceof Error ? err.message : 'Unknown error',
+    })
   }
 }
