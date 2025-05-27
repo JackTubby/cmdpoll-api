@@ -3,3 +3,4 @@ PLAN.md
 node_modules
 .env
 FLOW.md
+/dist
