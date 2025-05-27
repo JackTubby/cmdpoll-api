@@ -1,7 +1,9 @@
 // index.ts - Application entry point
 import { createServer } from './config/server.js'
 import { config } from './config/index.js'
-import { logger } from './utils/logger.js'
+import { logger as loggerInstance } from './utils/logger.js'
+
+global.logger = loggerInstance
 
 let server: any = null
 
