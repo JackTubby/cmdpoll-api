@@ -2,6 +2,7 @@
 import express from 'express'
 import { createServer as createHttpServer } from 'http'
 import { Server } from 'socket.io'
+import { createPollHandler } from '../handlers/poll/index.js'
 
 export function createServer() {
   const app = express()
@@ -15,7 +16,7 @@ export function createServer() {
 
   app.use(express.json())
 
-  app.get('/', (req, res) => {
+  app.get('/', (_req, res) => {
     res.send('Server is running!')
   })
 
@@ -30,9 +31,12 @@ export function createServer() {
    * }
    * This is useful for monitoring and ensuring the server is up and running.
    */
-  app.get('/api/health', (req, res) => {
+  app.get('/api/health', (_req, res) => {
     res.json({ status: 'OK', timestamp: new Date().toISOString() })
   })
+
+  // Handle poll creation
+  app.post('/api/v1/poll/create', createPollHandler)
 
   /**
    * Socket.IO connection handler
