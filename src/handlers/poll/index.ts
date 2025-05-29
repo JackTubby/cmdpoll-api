@@ -11,6 +11,7 @@ import db from '../../db/index.js'
 // }
 
 export async function createPollHandler(req: Request, res: Response) {
+  logger.info("Create poll running")
   try {
     const { title, categories, duration, formattedDuration, userId } = req.body
 
@@ -20,7 +21,7 @@ export async function createPollHandler(req: Request, res: Response) {
         categories,
         duration,
         formattedDuration,
-        userId,
+        userId: userId ? userId : '1',
       },
     })
     logger.info('Poll created successfully:', save)
