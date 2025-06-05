@@ -1,19 +1,12 @@
 import { Request, Response } from 'express'
 import db from '../../db/index.js'
-
-// interface Poll {
-//   title: string
-//   categories: [string]
-//   duration: string
-//   formattedDuration: string
-//   // TODO: remove optional once implemented
-//   userId?: string
-// }
+import { randomInt } from 'crypto'
 
 export async function createPollHandler(req: Request, res: Response) {
-  logger.info("Create poll running")
+  logger.info('Create poll running')
   try {
     const { title, categories, duration, formattedDuration, userId } = req.body
+    const randomId = randomInt(100000, 999999).toString()
 
     const save = await db.poll.create({
       data: {
@@ -21,6 +14,7 @@ export async function createPollHandler(req: Request, res: Response) {
         categories,
         duration,
         formattedDuration,
+        roomId: `poll-${randomId}`,
         userId: userId ? userId : '1',
       },
     })
@@ -29,6 +23,7 @@ export async function createPollHandler(req: Request, res: Response) {
       ok: true,
       message: 'Poll created successfully',
       data: save,
+      roomId: `poll-${randomId}`,
     })
   } catch (err) {
     logger.error('Error creating poll:', err)
