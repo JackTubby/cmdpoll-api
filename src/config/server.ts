@@ -49,16 +49,19 @@ export function createServer() {
       console.log('User disconnected:', socket.id)
     })
 
-    socket.on('message', (data) => {
-      console.log('Received message:', data)
-      // Broadcast to all clients
-      io.emit('message', data)
-    })
-
-    socket.on('join_room', (room) => {
-      socket.join(room)
-      console.log(`User ${socket.id} joined room: ${room}`)
-      socket.to(room).emit('user_joined', { userId: socket.id, room })
+    socket.on('joinRoom', (room) => {
+      console.log("here", room.room)
+      if (!room || typeof room.room !== 'string') {
+        console.error('Invalid room name:', room.room)
+        socket.emit('error', 'Invalid room name')
+        return
+      }
+      console.log(`User joinning room: ${room.room}`)
+      // TODO: we will add a check here to see if the user should be allowed to join the room
+      socket.join(room.room)
+      console.log(`User ${socket.id} joined room: ${room.room}`)
+      socket.emit('message', `You joined room: ${room.room}`)
+      // Todo: get poll data for the room and send it to all users in the room
     })
   })
 
