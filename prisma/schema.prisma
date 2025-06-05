@@ -28,6 +28,8 @@ model Poll {
   categories        Json    @default("{}")
   duration          Int
   formattedDuration String
+  roomId            String
+  createdAt         DateTime @default(now())
   User              User?   @relation(fields: [userId], references: [id])
   userId            String?
 }
