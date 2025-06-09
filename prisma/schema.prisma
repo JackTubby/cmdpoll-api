@@ -14,22 +14,62 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  password  String   @default("password")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  Poll      Poll[]
+  id             String           @id @default(cuid())
+  email          String           @unique
+  password       String           @default("password")
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  Poll           RunningPoll[]
+  HistoricalPoll HistoricalPoll[]
+  Team           Team[]           @relation("TeamUsers")
 }
 
-model Poll {
-  id                String  @id @default(cuid())
-  title             String
-  categories        Json    @default("{}")
-  duration          Int
-  formattedDuration String
-  roomId            String
-  createdAt         DateTime @default(now())
-  User              User?   @relation(fields: [userId], references: [id])
-  userId            String?
+model RunningPoll {
+  id            String   @id @default(cuid())
+  title         String
+  categories    Json     @default("{}")
+  duration      Int
+  roomId        String
+  createdAt     DateTime @default(now())
+  usersVotedIds String[] @default([])
+
+  user   User?   @relation(fields: [userId], references: [id])
+  userId String?
+  room   Room    @relation(fields: [roomId], references: [id])
+}
+
+model HistoricalPoll {
+  id            String   @id @default(cuid())
+  title         String
+  categories    Json     @default("{}")
+  duration      Int
+  roomId        String
+  createdAt     DateTime @default(now())
+  usersVotedIds String[] @default([])
+
+  user   User?   @relation(fields: [userId], references: [id])
+  userId String?
+  room   Room    @relation(fields: [roomId], references: [id])
+}
+
+model Room {
+  id        String   @id @default(cuid())
+  name      String
+  isPrivate Boolean  @default(false)
+  teamId    String? // null = public room
+  createdAt DateTime @default(now())
+
+  team            Team?            @relation(fields: [teamId], references: [id])
+  runningPolls    RunningPoll[]
+  historicalPolls HistoricalPoll[]
+}
+
+model Team {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users User[] @relation("TeamUsers")
+  rooms Room[]
 }
