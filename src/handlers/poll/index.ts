@@ -11,11 +11,16 @@ export async function createPollHandler(req: Request, res: Response) {
     const save = await db.runningPoll.create({
       data: {
         title,
-        categories,
         duration,
         roomId: `poll-${randomId}`,
         userId: userId ? userId : '1',
         isPrivate: setPrivacy,
+        categories: {
+          create: categories.map((category: string) => ({
+            name: category,
+            voteCount: 0,
+          })),
+        },
       },
     })
     logger.info('Poll created successfully:', save)
