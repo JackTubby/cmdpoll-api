@@ -3,6 +3,9 @@ import express from 'express'
 import { createServer as createHttpServer } from 'http'
 import { Server } from 'socket.io'
 import { createPollHandler } from '../handlers/poll/index.js'
+import db from '../db/index.js'
+
+// TODO: make sure user can only vote once per poll
 
 export function createServer() {
   const app = express()
@@ -42,27 +45,54 @@ export function createServer() {
    * Socket.IO connection handler
    * This function handles incoming WebSocket connections.
    */
-  io.on('connection', (socket) => {
+  io.on('connection', async (socket) => {
     console.log('User connected:', socket.id)
+    const room = socket.handshake.query.room
+    console.log('room param: ', room)
+    if (!room || typeof room !== 'string') {
+      console.error('Invalid room name:', room)
+      socket.emit('error', 'Invalid room name')
+      return
+    }
+    console.log(`User joinning room: ${room}`)
+
+    socket.join(room)
+    console.log(`User ${socket.id} joined room: ${room}`)
+    socket.emit('message', `You joined room: ${room}`)
+
+    // Our inital poll data
+    // TODO: Tidy up what we actually need to send here
+    const pollData = await db.runningPoll.findFirst({
+      where: {
+        roomId: room,
+      },
+      include: {
+        categories: true,
+        votes: true,
+      },
+    })
+    console.log('Poll data: ', pollData)
+    socket.emit('pollData', pollData)
+
+    // User makes a vote
+    socket.on('vote', async (vote) => {
+      console.log('Vote: ', vote)
+      // TODO: validate incoming vote data
+      const makeVote = await db.pollVote.create({
+        data: {
+          userId: '1',
+          categoryId: vote.categoryId,
+          runningPollId: vote.pollId,
+        },
+      })
+      console.log('votedbresponse: ', makeVote)
+      socket.emit('votedResponse', makeVote)
+    })
 
     socket.on('disconnect', () => {
       console.log('User disconnected:', socket.id)
     })
-
-    socket.on('joinRoom', (room) => {
-      console.log("here", room.room)
-      if (!room || typeof room.room !== 'string') {
-        console.error('Invalid room name:', room.room)
-        socket.emit('error', 'Invalid room name')
-        return
-      }
-      console.log(`User joinning room: ${room.room}`)
-      // TODO: we will add a check here to see if the user should be allowed to join the room
-      socket.join(room.room)
-      console.log(`User ${socket.id} joined room: ${room.room}`)
-      socket.emit('message', `You joined room: ${room.room}`)
-      // Todo: get poll data for the room and send it to all users in the room
-    })
+    // socket.on('joinRoom', async () => {})
   })
 
   /**
@@ -107,7 +137,7 @@ export function createServer() {
   }
 
   // Attach close method to the server
-  Object.assign(httpServer, { close: closeServer })
+  Object.assign(httpServer as any, { close: closeServer })
 
   return httpServer
 }
