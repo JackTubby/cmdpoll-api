@@ -25,17 +25,39 @@ model User {
 }
 
 model RunningPoll {
-  id            String   @id @default(cuid())
-  title         String
-  categories    Json     @default("{}")
-  duration      Int
-  roomId        String
-  createdAt     DateTime @default(now())
-  usersVotedIds String[] @default([])
+  id        String   @id @default(cuid())
+  title     String
+  duration  Int
+  roomId    String
+  isPrivate Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  categories    PollCategory[]
+  votes         PollVote[]
+  usersVotedIds String[]       @default([])
 
   user   User?   @relation(fields: [userId], references: [id])
   userId String?
-  room   Room    @relation(fields: [roomId], references: [id])
+}
+
+model PollCategory {
+  id        String @id @default(cuid())
+  name      String
+  voteCount Int    @default(0)
+
+  poll     RunningPoll @relation(fields: [pollId], references: [id])
+  pollId   String
+  PollVote PollVote[]
+}
+
+model PollVote {
+  id            String       @id @default(cuid())
+  userId        String // Could be anonymous or actual user
+  category      PollCategory @relation(fields: [categoryId], references: [id])
+  categoryId    String
+  createdAt     DateTime     @default(now())
+  RunningPoll   RunningPoll? @relation(fields: [runningPollId], references: [id])
+  runningPollId String?
 }
 
 model HistoricalPoll {
@@ -44,24 +66,12 @@ model HistoricalPoll {
   categories    Json     @default("{}")
   duration      Int
   roomId        String
+  isPrivate     Boolean  @default(false)
   createdAt     DateTime @default(now())
   usersVotedIds String[] @default([])
 
   user   User?   @relation(fields: [userId], references: [id])
   userId String?
-  room   Room    @relation(fields: [roomId], references: [id])
-}
-
-model Room {
-  id        String   @id @default(cuid())
-  name      String
-  isPrivate Boolean  @default(false)
-  teamId    String? // null = public room
-  createdAt DateTime @default(now())
-
-  team            Team?            @relation(fields: [teamId], references: [id])
-  runningPolls    RunningPoll[]
-  historicalPolls HistoricalPoll[]
 }
 
 model Team {
@@ -72,5 +82,4 @@ model Team {
   updatedAt DateTime @updatedAt
 
   users User[] @relation("TeamUsers")
-  rooms Room[]
 }
