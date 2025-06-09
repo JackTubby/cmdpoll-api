@@ -5,15 +5,14 @@ import { randomInt } from 'crypto'
 export async function createPollHandler(req: Request, res: Response) {
   logger.info('Create poll running')
   try {
-    const { title, categories, duration, formattedDuration, userId } = req.body
+    const { title, categories, duration, userId } = req.body
     const randomId = randomInt(100000, 999999).toString()
 
-    const save = await db.poll.create({
+    const save = await db.runningPoll.create({
       data: {
         title,
         categories,
         duration,
-        formattedDuration,
         roomId: `poll-${randomId}`,
         userId: userId ? userId : '1',
       },
