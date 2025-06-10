@@ -5,8 +5,6 @@ import { Server } from 'socket.io'
 import { createPollHandler } from '../handlers/poll/index.js'
 import db from '../db/index.js'
 
-// TODO: make sure user can only vote once per poll
-
 export function createServer() {
   const app = express()
   const httpServer = createHttpServer(app)
@@ -61,7 +59,6 @@ export function createServer() {
     socket.emit('message', `You joined room: ${room}`)
 
     // Our inital poll data
-    // TODO: Tidy up what we actually need to send here
     const pollData = await db.runningPoll.findFirst({
       where: {
         roomId: room,
@@ -77,16 +74,29 @@ export function createServer() {
     // User makes a vote
     socket.on('vote', async (vote) => {
       console.log('Vote: ', vote)
-      // TODO: validate incoming vote data
-      const makeVote = await db.pollVote.create({
-        data: {
+      if (!vote.categoryId || !vote.runningPollId) {
+        socket.emit('Missing category or poll')
+      }
+      const hasVoted = !!(await db.pollVote.findFirst({
+        where: {
           userId: '1',
-          categoryId: vote.categoryId,
           runningPollId: vote.pollId,
         },
-      })
-      console.log('votedbresponse: ', makeVote)
-      socket.emit('votedResponse', makeVote)
+      }))
+      if (hasVoted) {
+        console.log('User has already voted in this poll')
+        socket.emit('votedResponse', 'You vote has already been cast')
+      } else {
+        const makeVote = await db.pollVote.create({
+          data: {
+            userId: '1',
+            categoryId: vote.categoryId,
+            runningPollId: vote.pollId,
+          },
+        })
+        console.log('votedbresponse: ', makeVote)
+        socket.emit('votedResponse', makeVote)
+      }
     })
 
     socket.on('disconnect', () => {
